@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Языки">
+<meta name="theme-color" content="#100e0a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f2ea" media="(prefers-color-scheme: light)">
+<title>Мои языки</title>
+<style>
+  :root{
+    --bg:#f5f2ea; --surface:#ffffff; --surface-2:#efeadd; --line:#e4ddcc;
+    --text:#211d15; --muted:#6f6656; --faint:#a89f8c;
+    --accent:#b6810b; --en:#b6810b; --ja:#d94436; --fr:#2f6fe0; --tt:#1f9b6b;
+    --good:#1f9b6b; --shadow:0 1px 0 rgba(0,0,0,.03);
+    --r:16px;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#100e0a; --surface:#1a1712; --surface-2:#221e17; --line:#312b21;
+      --text:#f2ede1; --muted:#a99f8d; --faint:#6e6656;
+      --accent:#f0b429; --en:#f0b429; --ja:#ff6f61; --fr:#6aa4ff; --tt:#4fc793;
+      --good:#4fc793; --shadow:none;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f5f2ea; --surface:#ffffff; --surface-2:#efeadd; --line:#e4ddcc;
+    --text:#211d15; --muted:#6f6656; --faint:#a89f8c;
+    --accent:#b6810b; --en:#b6810b; --ja:#d94436; --fr:#2f6fe0; --tt:#1f9b6b; --good:#1f9b6b; --shadow:0 1px 0 rgba(0,0,0,.03);
+  }
+  :root[data-theme="dark"]{
+    --bg:#100e0a; --surface:#1a1712; --surface-2:#221e17; --line:#312b21;
+    --text:#f2ede1; --muted:#a99f8d; --faint:#6e6656;
+    --accent:#f0b429; --en:#f0b429; --ja:#ff6f61; --fr:#6aa4ff; --tt:#4fc793; --good:#4fc793; --shadow:none;
+  }
+  html,body{margin:0;padding:0;background:var(--bg)}
+  *{box-sizing:border-box}
+  #app{
+    font-family:var(--font); color:var(--text); background:var(--bg);
+    max-width:520px; margin:0 auto; min-height:100vh;
+    -webkit-font-smoothing:antialiased; padding-bottom:88px; position:relative;
+  }
+  #app *{margin:0}
+  button{font-family:inherit}
+  .tnum{font-variant-numeric:tabular-nums}
+
+  header{
+    padding:18px 18px 10px; position:sticky; top:0; z-index:20;
+    background:linear-gradient(var(--bg) 78%, transparent); backdrop-filter:saturate(1.1);
+  }
+  .hrow{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .brand{display:flex; flex-direction:column; gap:2px}
+  .brand .eyebrow{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); font-weight:700}
+  .brand h1{font-size:20px; font-weight:800; letter-spacing:-.02em; line-height:1}
+  .hbtns{display:flex; gap:8px; align-items:center}
+  .streak{display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--line);
+    padding:7px 11px; border-radius:999px; font-weight:800; font-size:14px}
+  .streak b{color:var(--accent)}
+  .iconbtn{width:38px; height:38px; border-radius:12px; border:1px solid var(--line); background:var(--surface);
+    color:var(--text); font-size:16px; cursor:pointer; display:grid; place-items:center}
+  .iconbtn:active{transform:scale(.94)}
+  #syncBtn.ok{color:var(--good)} #syncBtn.off{color:var(--faint)}
+  @keyframes pulse{50%{opacity:.4}}
+  #syncBtn.syncing{animation:pulse 1s ease-in-out infinite; color:var(--accent)}
+
+  main{padding:4px 16px 0}
+  .view{display:none; animation:fade .25s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+  @media (prefers-reduced-motion: reduce){.view,.view.active{animation:none} *{transition:none!important; animation:none!important}}
+
+  .datehead{display:flex; align-items:baseline; justify-content:space-between; margin:6px 2px 16px}
+  .datehead .d1{font-size:15px; font-weight:700}
+  .datehead .d2{font-size:13px; color:var(--muted); text-transform:capitalize}
+
+  .todaytop{display:flex; align-items:center; gap:16px; background:var(--surface); border:1px solid var(--line);
+    border-radius:var(--r); padding:16px; margin-bottom:14px; box-shadow:var(--shadow)}
+  .ring{position:relative; width:82px; height:82px; flex:0 0 auto}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .pct{position:absolute; inset:0; display:grid; place-items:center; font-weight:800; font-size:20px}
+  .todaytop .tt-txt{flex:1}
+  .todaytop .tt-txt .big{font-size:15px; font-weight:800; margin-bottom:3px}
+  .todaytop .tt-txt .sm{font-size:13px; color:var(--muted); line-height:1.4}
+  .focus-chip{display:inline-flex; align-items:center; gap:6px; margin-top:8px; font-size:12px; font-weight:700;
+    color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, transparent); padding:4px 10px; border-radius:999px}
+
+  .slot-label{font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint);
+    font-weight:800; margin:18px 4px 8px; display:flex; align-items:center; gap:8px}
+  .slot-label::after{content:""; flex:1; height:1px; background:var(--line)}
+
+  .task{display:flex; align-items:center; gap:13px; background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:13px 14px; margin-bottom:9px; cursor:pointer; position:relative; overflow:hidden; transition:transform .12s ease}
+  .task::before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--lc)}
+  .task:active{transform:scale(.99)}
+  .task.done{opacity:.62}
+  .task.done .t-title{text-decoration:line-through; text-decoration-color:var(--faint)}
+  .check{width:26px; height:26px; border-radius:8px; border:2px solid var(--line); flex:0 0 auto;
+    display:grid; place-items:center; color:#fff; font-size:15px; transition:.15s}
+  .task.done .check{background:var(--lc); border-color:var(--lc)}
+  .t-body{flex:1; min-width:0}
+  .t-title{font-size:15px; font-weight:700; line-height:1.25}
+  .t-meta{font-size:12.5px; color:var(--muted); margin-top:2px; display:flex; gap:8px; flex-wrap:wrap}
+  .badge{font-size:11px; font-weight:800; padding:2px 8px; border-radius:6px; color:#fff; background:var(--lc)}
+  .mins{font-weight:700; color:var(--muted); font-size:12.5px; white-space:nowrap}
+  .passive{background:var(--surface-2); border-style:dashed}
+  .passive .check{display:none}
+  .passive .t-title{font-weight:600; color:var(--muted)}
+
+  .silence{background:linear-gradient(135deg, color-mix(in srgb,var(--fr) 16%, var(--surface)), var(--surface));
+    border:1px solid var(--line); border-radius:var(--r); padding:20px; text-align:center; margin-bottom:14px}
+  .silence h3{font-size:17px; font-weight:800; margin-bottom:6px}
+  .silence p{font-size:13.5px; color:var(--muted); line-height:1.5}
+  .empty{text-align:center; color:var(--muted); padding:30px 10px; font-size:14px}
+
+  .daycard{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 15px; margin-bottom:11px; box-shadow:var(--shadow)}
+  .daycard.now{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent)}
+  .daycard h3{font-size:14px; font-weight:800; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px}
+  .daycard h3 .tag{font-size:11px; font-weight:800; color:var(--muted); background:var(--surface-2); padding:3px 9px; border-radius:999px}
+  .drow{display:flex; align-items:center; gap:10px; padding:6px 0; font-size:13.5px; border-top:1px solid var(--line)}
+  .drow:first-of-type{border-top:none}
+  .dot{width:9px; height:9px; border-radius:3px; flex:0 0 auto; background:var(--lc)}
+  .drow .dt{flex:1}
+  .drow .dm{color:var(--faint); font-size:12px; font-weight:700; white-space:nowrap}
+
+  .langtabs{display:flex; gap:7px; overflow-x:auto; padding:2px 0 12px; margin:0 -2px; scrollbar-width:none}
+  .langtabs::-webkit-scrollbar{display:none}
+  .lt{white-space:nowrap; padding:8px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface);
+    color:var(--muted); font-weight:700; font-size:13.5px; cursor:pointer; flex:0 0 auto}
+  .lt.active{color:#fff; background:var(--lc); border-color:var(--lc)}
+  .sub-h{font-size:13px; font-weight:800; color:var(--faint); text-transform:uppercase; letter-spacing:.08em; margin:16px 2px 9px}
+  .field{width:100%; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:11px 12px;
+    color:var(--text); font-family:inherit; font-size:14.5px; resize:vertical}
+  .field:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
+  .row2{display:flex; gap:8px; margin-bottom:8px}
+  .row2 .field{flex:1; min-width:0}
+  .btn{border:none; border-radius:11px; padding:11px 15px; font-weight:800; font-size:14px; cursor:pointer;
+    background:var(--accent); color:#111; display:inline-flex; align-items:center; justify-content:center; gap:7px}
+  .btn:active{transform:scale(.97)}
+  .btn.ghost{background:var(--surface); color:var(--text); border:1px solid var(--line)}
+  .btn.block{width:100%}
+  .btn.sm{padding:8px 12px; font-size:13px; border-radius:9px}
+
+  .note-item, .vocab-item{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 13px; margin-bottom:8px; position:relative}
+  .note-item .nt{font-size:14.5px; line-height:1.45; white-space:pre-wrap; word-break:break-word}
+  .note-item .nd, .vocab-item .nd{font-size:11.5px; color:var(--faint); margin-top:6px; font-weight:700}
+  .vocab-item .term{font-size:15.5px; font-weight:800}
+  .vocab-item .tr{font-size:14px; color:var(--muted); margin-top:1px}
+  .vocab-item .ex{font-size:13px; color:var(--faint); margin-top:5px; font-style:italic; border-left:2px solid var(--line); padding-left:9px}
+  .del{position:absolute; top:9px; right:10px; background:none; border:none; color:var(--faint); font-size:16px; cursor:pointer; padding:4px; line-height:1}
+  .del:active{color:var(--ja)}
+
+  .statgrid{display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-bottom:14px}
+  .stat{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:15px; box-shadow:var(--shadow)}
+  .stat .n{font-size:30px; font-weight:800; letter-spacing:-.02em; line-height:1}
+  .stat .l{font-size:12.5px; color:var(--muted); margin-top:5px; font-weight:600}
+  .stat .n.accent{color:var(--accent)}
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:15px; margin-bottom:14px; box-shadow:var(--shadow)}
+  .panel h3{font-size:14px; font-weight:800; margin-bottom:13px}
+  .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:11px; font-size:13px}
+  .bar-row .bl{width:88px; font-weight:700; flex:0 0 auto}
+  .bar-track{flex:1; height:9px; background:var(--surface-2); border-radius:999px; overflow:hidden}
+  .bar-fill{height:100%; border-radius:999px; background:var(--lc); transition:width .5s ease}
+  .bar-row .bv{width:46px; text-align:right; color:var(--muted); font-weight:700; flex:0 0 auto}
+  .heat{display:flex; gap:5px; justify-content:space-between}
+  .heat .cell{flex:1; aspect-ratio:1; border-radius:6px; background:var(--surface-2); display:grid; place-items:end center; padding-bottom:4px; font-size:10px; color:var(--faint); font-weight:700}
+  .heat .cell.lvl1{background:color-mix(in srgb,var(--good) 30%, var(--surface-2))}
+  .heat .cell.lvl2{background:color-mix(in srgb,var(--good) 60%, var(--surface-2))}
+  .heat .cell.lvl3{background:var(--good); color:#08130d}
+
+  .info{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:13px; box-shadow:var(--shadow)}
+  .info h3{font-size:15px; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:8px}
+  .info p{font-size:13.5px; color:var(--muted); line-height:1.55; margin-bottom:8px}
+  .info ol{font-size:13.5px; color:var(--muted); line-height:1.6; padding-left:20px}
+  .info ol li{margin-bottom:4px}
+  .info b{color:var(--text)}
+  .kbd{background:var(--surface-2); border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap}
+  .codebox{display:flex; align-items:center; gap:8px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin:4px 0 10px}
+  .codebox code{flex:1; font-size:13px; word-break:break-all; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--text)}
+  .toast{position:fixed; left:50%; bottom:104px; transform:translateX(-50%) translateY(20px); background:var(--text); color:var(--bg);
+    padding:11px 18px; border-radius:999px; font-weight:700; font-size:13.5px; opacity:0; pointer-events:none; transition:.25s; z-index:60; max-width:90%}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  nav{position:fixed; bottom:0; left:0; right:0; z-index:30; background:color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter:blur(14px) saturate(1.4); border-top:1px solid var(--line); padding:7px 6px calc(7px + env(safe-area-inset-bottom))}
+  .navinner{max-width:520px; margin:0 auto; display:flex; justify-content:space-around}
+  .nav-b{background:none; border:none; color:var(--faint); display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:5px 8px; cursor:pointer; font-size:10.5px; font-weight:700; flex:1; border-radius:12px}
+  .nav-b .ic{font-size:20px; line-height:1}
+  .nav-b.active{color:var(--accent)}
+  .nav-b:active{transform:scale(.92)}
+
+  .overlay{position:fixed; inset:0; z-index:100; background:var(--bg); display:none; overflow-y:auto}
+  .overlay.show{display:block}
+  .overlay .inner{max-width:520px; margin:0 auto; padding:34px 26px; min-height:100%; display:flex; flex-direction:column; justify-content:center}
+  .overlay .logo{font-size:34px; margin-bottom:14px}
+  .overlay h2{font-size:24px; font-weight:800; margin-bottom:10px; letter-spacing:-.02em}
+  .overlay p{color:var(--muted); font-size:14.5px; line-height:1.55; margin-bottom:16px}
+  .overlay .field{margin-bottom:10px; font-size:16px}
+  .overlay .btn{margin-bottom:9px}
+  .muted-link{background:none; border:none; color:var(--accent); font-weight:700; font-size:13.5px; cursor:pointer; padding:8px; align-self:center}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="hrow">
+      <div class="brand">
+        <span class="eyebrow">6 недель · английский-приоритет</span>
+        <h1>Мои языки</h1>
+      </div>
+      <div class="hbtns">
+        <div class="streak" title="Дней подряд">🔥 <b id="streakN">0</b></div>
+        <button class="iconbtn off" id="syncBtn" aria-label="Синхронизация">☁</button>
+        <button class="iconbtn" id="themeBtn" aria-label="Сменить тему">◐</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="view active" id="view-today"></section>
+    <section class="view" id="view-week"></section>
+    <section class="view" id="view-notes"></section>
+    <section class="view" id="view-stats"></section>
+    <section class="view" id="view-remind"></section>
+  </main>
+  <div class="toast" id="toast"></div>
+  <nav>
+    <div class="navinner">
+      <button class="nav-b active" data-v="today"><span class="ic">☀️</span>Сегодня</button>
+      <button class="nav-b" data-v="week"><span class="ic">🗓️</span>Неделя</button>
+      <button class="nav-b" data-v="notes"><span class="ic">📝</span>Заметки</button>
+      <button class="nav-b" data-v="stats"><span class="ic">📈</span>Прогресс</button>
+      <button class="nav-b" data-v="remind"><span class="ic">🔔</span>Ещё</button>
+    </div>
+  </nav>
+</div>
+
+<div class="overlay" id="onboard">
+  <div class="inner">
+    <div class="logo">🗣️</div>
+    <h2>Синхронизация</h2>
+    <p>Введи свой <b>секретный код</b> — он связывает твои данные между устройствами. На новом телефоне введёшь тот же код и увидишь всё то же самое. Никакого логина.</p>
+    <input class="field" id="codeInput" placeholder="твой секретный код" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button class="btn block" id="codeStart">Начать</button>
+    <button class="muted-link" id="codeGen">✨ Сгенерировать новый код</button>
+    <button class="muted-link" id="codeSkip" style="color:var(--faint)">Пока без синхронизации →</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+/* ---------- Firebase ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyBdfZoQ29_h0S377BCbSaBvkm-rEAh7sTo",
+  authDomain: "moi-yazyki.firebaseapp.com",
+  projectId: "moi-yazyki",
+  storageBucket: "moi-yazyki.firebasestorage.app",
+  messagingSenderId: "866773489690",
+  appId: "1:866773489690:web:f4137cb9faa485150e19a3"
+};
+
+/* ---------- storage / state ---------- */
+const LKEY="lingua_v1", CKEY="lingua_code";
+function loadLocal(){ try{ const r=localStorage.getItem(LKEY); if(r) return JSON.parse(r); }catch(e){} return null; }
+function saveLocal(){ try{ localStorage.setItem(LKEY, JSON.stringify(state)); }catch(e){} }
+let state = loadLocal() || {done:{},notes:{},vocab:{},diary:[],theme:null};
+state.done=state.done||{}; state.notes=state.notes||{}; state.vocab=state.vocab||{}; state.diary=state.diary||[];
+
+/* ---------- languages ---------- */
+const LANG={ en:{name:"Английский",tag:"EN",v:"--en"}, ja:{name:"Японский",tag:"JA",v:"--ja"},
+  fr:{name:"Французский",tag:"FR",v:"--fr"}, tt:{name:"Татарский",tag:"TT",v:"--tt"} };
+const LANG_ORDER=["en","ja","fr","tt"];
+
+/* ---------- schedule (0=Вс..6=Сб) ---------- */
+const T=(lang,slot,mins,title)=>({lang,slot,mins,title,type:"active"});
+const P=(lang,title)=>({lang,slot:"Фон",mins:0,title,type:"passive"});
+const MONWED=[T("tt","Дорога",15,"Песни / подкаст"),T("fr","Вечер",15,"Читать вслух"),T("en","Вечер",15,"Книга — вслух"),P("fr","Французское радио")];
+const THUFRI=[T("ja","Утро",30,"Хирагана / кандзи"),T("tt","Дорога",15,"Аудио в дороге"),T("en","Вечер",10,"Чтение книги"),P("ja","Японское радио NHK")];
+const SAT=[T("en","Блок",40,"Грамматика — 1 тема"),T("en","Блок",20,"Диктофон — 10 предложений"),P("fr","Радио RFI")];
+const SUN=[T("en","Блок",40,"Фразовые глаголы — 5 шт"),T("en","Блок",20,"Повтор недели"),P("ja","Аниме")];
+function daySchedule(d){ if(d>=1&&d<=3)return MONWED; if(d===4||d===5)return THUFRI; if(d===6)return SAT; return SUN; }
+const DOW_RU=["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"];
+const MON_RU=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+
+const slug=s=>s.replace(/[^a-zа-я0-9]+/gi,"-").toLowerCase();
+const tid=t=>t.lang+"-"+slug(t.slot)+"-"+slug(t.title);
+const dkey=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const doneKey=(d,t)=>dkey(d)+"::"+tid(t);
+function isLastSunday(d){ if(d.getDay()!==0)return false; const n=new Date(d); n.setDate(n.getDate()+7); return n.getMonth()!==d.getMonth(); }
+
+/* ---------- helpers ---------- */
+const $=(s,r)=>(r||document).querySelector(s);
+function el(tag,cls,html){const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e;}
+const esc=s=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let toastT; function toast(m){const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1900);}
+function fmtDate(ts){const d=new Date(ts); return d.getDate()+" "+MON_RU[d.getMonth()]+", "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
+
+/* ---------- stats ---------- */
+const activeTasks=d=>daySchedule(d).filter(t=>t.type==="active");
+function dayCompletion(d){ const a=activeTasks(d.getDay()); if(!a.length)return{done:0,total:0};
+  return {done:a.filter(t=>state.done[doneKey(d,t)]).length, total:a.length}; }
+function computeStreak(){ let s=0,d=new Date(); d.setHours(0,0,0,0);
+  if(dayCompletion(d).done===0) d.setDate(d.getDate()-1);
+  for(let i=0;i<400;i++){ const c=dayCompletion(d); if(c.total>0&&c.done>0)s++; else if(c.total>0)break; d.setDate(d.getDate()-1); } return s; }
+function weekMonday(){ const d=new Date(); d.setHours(0,0,0,0); const wd=(d.getDay()+6)%7; d.setDate(d.getDate()-wd); return d; }
+function weekStats(){ const mon=weekMonday(); let totalMin=0,doneMin=0,totalTasks=0,doneTasks=0;
+  const perLang={}; LANG_ORDER.forEach(l=>perLang[l]={done:0,total:0});
+  for(let i=0;i<7;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i);
+    activeTasks(d.getDay()).forEach(t=>{ totalTasks++; totalMin+=t.mins; perLang[t.lang].total+=t.mins;
+      if(state.done[doneKey(d,t)]){ doneTasks++; doneMin+=t.mins; perLang[t.lang].done+=t.mins; } }); }
+  return {totalMin,doneMin,totalTasks,doneTasks,perLang}; }
+
+/* ---------- persist (local + cloud) ---------- */
+function persist(){ saveLocal(); schedulePush(); }
+
+/* =========== TODAY =========== */
+function renderToday(){
+  const v=$("#view-today"); v.innerHTML=""; const now=new Date(); const dow=now.getDay();
+  const head=el("div","datehead"); head.innerHTML='<div class="d1">'+DOW_RU[dow]+'</div><div class="d2">'+now.getDate()+" "+MON_RU[now.getMonth()]+'</div>'; v.appendChild(head);
+  if(isLastSunday(now)){ const s=el("div","silence"); s.innerHTML='<h3>🤫 День тишины</h3><p>Последнее воскресенье месяца — без языков. Мозгу нужно время «переварить» всё во сне. Это важнее любого расписания. Отдыхай.</p>'; v.appendChild(s); }
+  const sched=daySchedule(dow); const comp=dayCompletion(now); const pct=comp.total?Math.round(comp.done/comp.total*100):0;
+  const top=el("div","todaytop"); const R=34,C=2*Math.PI*R,off=C*(1-pct/100);
+  const msg=pct===100?"Готово на сегодня. Отличная работа 👏":pct>0?"Продолжай, ты в процессе.":"Начни с малого — даже 10 минут считаются.";
+  top.innerHTML='<div class="ring"><svg width="82" height="82" viewBox="0 0 82 82">'+
+    '<circle cx="41" cy="41" r="'+R+'" fill="none" stroke="var(--surface-2)" stroke-width="8"/>'+
+    '<circle cx="41" cy="41" r="'+R+'" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/>'+
+    '</svg><div class="pct tnum">'+pct+'%</div></div>'+
+    '<div class="tt-txt"><div class="big">'+comp.done+' из '+comp.total+' выполнено</div><div class="sm">'+msg+'</div>'+
+    '<span class="focus-chip">⚡ Фокус: Английский</span></div>'; v.appendChild(top);
+  const order=["Утро","Дорога","Блок","Вечер","Фон"], slots={};
+  sched.forEach(t=>{ (slots[t.slot]=slots[t.slot]||[]).push(t); });
+  order.forEach(sl=>{ if(!slots[sl])return; const lbl=el("div","slot-label");
+    const ic={"Утро":"☀️","Дорога":"🚶","Блок":"⏱️","Вечер":"🌙","Фон":"⏳"}[sl]||"";
+    lbl.innerHTML=ic+" "+(sl==="Фон"?"Пассив (готовка / уборка)":sl); v.appendChild(lbl);
+    slots[sl].forEach(t=>v.appendChild(taskEl(t,now))); });
+}
+function taskEl(t,d){ const L=LANG[t.lang], passive=t.type==="passive", isDone=!passive&&!!state.done[doneKey(d,t)];
+  const e=el("div","task"+(passive?" passive":"")+(isDone?" done":"")); e.style.setProperty("--lc","var("+L.v+")");
+  let meta='<span class="badge">'+L.tag+'</span>'; meta+=passive?'<span class="mins">пассивно</span>':'<span class="mins tnum">'+t.mins+' мин</span>';
+  e.innerHTML=(passive?'':'<div class="check">✓</div>')+'<div class="t-body"><div class="t-title">'+esc(t.title)+'</div><div class="t-meta">'+meta+'</div></div>';
+  if(!passive) e.addEventListener("click",()=>{ const k=doneKey(d,t); if(state.done[k])delete state.done[k]; else state.done[k]=1; persist(); renderToday(); updateStreak(); });
+  return e; }
+
+/* =========== WEEK =========== */
+function renderWeek(){ const v=$("#view-week"); v.innerHTML="";
+  const intro=el("div","datehead"); intro.innerHTML='<div class="d1">Боевое расписание</div><div class="d2">английский · 60%</div>'; v.appendChild(intro);
+  const td=new Date().getDay();
+  const plan=[{dows:[1,2,3],label:"Пн · Вт · Ср",tag:"вечер + дорога",list:MONWED},{dows:[4,5],label:"Чт · Пт",tag:"утро + вечер",list:THUFRI},
+    {dows:[6],label:"Суббота",tag:"60 мин",list:SAT},{dows:[0],label:"Воскресенье",tag:"60 мин",list:SUN}];
+  plan.forEach(g=>{ const c=el("div","daycard"+(g.dows.includes(td)?" now":""));
+    let h='<h3>'+g.label+'<span class="tag">'+g.tag+'</span></h3>';
+    g.list.forEach(t=>{ const L=LANG[t.lang]; h+='<div class="drow"><span class="dot" style="background:var('+L.v+')"></span><span class="dt">'+esc(t.title)+' <b style="color:var('+L.v+')">· '+L.name+'</b></span><span class="dm">'+(t.type==="passive"?"фон":t.mins+"′")+'</span></div>'; });
+    c.innerHTML=h; v.appendChild(c); });
+  const note=el("div","info"); note.innerHTML='<p style="margin:0">🤫 <b>Последнее воскресенье месяца</b> — день тишины. Полный отдых от языков.</p>'; v.appendChild(note);
+}
+
+/* =========== NOTES =========== */
+let curLang="en", notesMode="lang";
+function renderNotes(){ const v=$("#view-notes"); v.innerHTML="";
+  const tabs=el("div","langtabs");
+  LANG_ORDER.forEach(l=>{ const b=el("button","lt"+(notesMode==="lang"&&curLang===l?" active":""),LANG[l].name);
+    b.style.setProperty("--lc","var("+LANG[l].v+")"); b.addEventListener("click",()=>{notesMode="lang";curLang=l;renderNotes();}); tabs.appendChild(b); });
+  const db=el("button","lt"+(notesMode==="diary"?" active":""),"📓 Дневник"); db.style.setProperty("--lc","var(--en)");
+  db.addEventListener("click",()=>{notesMode="diary";renderNotes();}); tabs.appendChild(db); v.appendChild(tabs);
+  if(notesMode==="diary"){ renderDiary(v); return; }
+  const L=LANG[curLang];
+  v.appendChild(el("div","sub-h","Заметки"));
+  const na=el("textarea","field"); na.rows=2; na.placeholder="Правило, мысль, ошибка… ("+L.name+")"; v.appendChild(na);
+  const addN=el("button","btn block sm","+ Добавить заметку"); addN.style.marginTop="8px"; addN.style.background="var("+L.v+")"; addN.style.color="#fff";
+  addN.addEventListener("click",()=>{ const t=na.value.trim(); if(!t)return; (state.notes[curLang]=state.notes[curLang]||[]).unshift({t,d:Date.now()}); persist(); renderNotes(); });
+  v.appendChild(addN);
+  const nl=el("div"); nl.style.marginTop="12px"; const notes=state.notes[curLang]||[];
+  if(!notes.length) nl.appendChild(el("div","empty","Пока нет заметок по этому языку."));
+  notes.forEach((n,i)=>{ const it=el("div","note-item"); it.innerHTML='<div class="nt">'+esc(n.t)+'</div><div class="nd">'+fmtDate(n.d)+'</div><button class="del" aria-label="Удалить">✕</button>';
+    $(".del",it).addEventListener("click",()=>{ state.notes[curLang].splice(i,1); persist(); renderNotes(); }); nl.appendChild(it); });
+  v.appendChild(nl);
+  v.appendChild(el("div","sub-h","Словарь / фразы"));
+  const r1=el("div","row2"); const term=el("input","field"); term.placeholder="слово / фраза"; const tr=el("input","field"); tr.placeholder="перевод";
+  r1.appendChild(term); r1.appendChild(tr); v.appendChild(r1);
+  const ex=el("input","field"); ex.placeholder="пример из книги (необязательно)"; ex.style.marginBottom="8px"; v.appendChild(ex);
+  const addV=el("button","btn block sm","+ В словарь"); addV.style.background="var("+L.v+")"; addV.style.color="#fff";
+  addV.addEventListener("click",()=>{ const t=term.value.trim(); if(!t)return; (state.vocab[curLang]=state.vocab[curLang]||[]).unshift({term:t,tr:tr.value.trim(),ex:ex.value.trim(),d:Date.now()}); persist(); renderNotes(); });
+  v.appendChild(addV);
+  const vl=el("div"); vl.style.marginTop="12px"; const vocab=state.vocab[curLang]||[];
+  if(!vocab.length) vl.appendChild(el("div","empty","Словарь пуст. Добавь фразовые глаголы и коллокации."));
+  vocab.forEach((w,i)=>{ const it=el("div","vocab-item"); it.innerHTML='<div class="term">'+esc(w.term)+'</div>'+(w.tr?'<div class="tr">'+esc(w.tr)+'</div>':'')+(w.ex?'<div class="ex">'+esc(w.ex)+'</div>':'')+'<button class="del" aria-label="Удалить">✕</button>';
+    $(".del",it).addEventListener("click",()=>{ state.vocab[curLang].splice(i,1); persist(); renderNotes(); }); vl.appendChild(it); });
+  v.appendChild(vl);
+}
+function renderDiary(v){ const info=el("div","info"); info.innerHTML='<p style="margin:0">📓 Место под субботние <b>10 предложений</b> и пометки к диктофону. Пиши о своей работе и жизни — так грамматика и речь закрепляются вместе.</p>'; v.appendChild(info);
+  const ta=el("textarea","field"); ta.rows=5; ta.placeholder="Сегодняшняя запись…"; ta.style.marginBottom="8px"; v.appendChild(ta);
+  const add=el("button","btn block","💾 Сохранить запись"); add.addEventListener("click",()=>{ const t=ta.value.trim(); if(!t)return; state.diary.unshift({t,d:Date.now()}); persist(); renderNotes(); }); v.appendChild(add);
+  const list=el("div"); list.style.marginTop="14px"; if(!state.diary.length) list.appendChild(el("div","empty","Дневник пуст. Первая запись — самая важная."));
+  state.diary.forEach((n,i)=>{ const it=el("div","note-item"); it.innerHTML='<div class="nt">'+esc(n.t)+'</div><div class="nd">'+fmtDate(n.d)+'</div><button class="del" aria-label="Удалить">✕</button>';
+    $(".del",it).addEventListener("click",()=>{ state.diary.splice(i,1); persist(); renderNotes(); }); list.appendChild(it); });
+  v.appendChild(list);
+}
+
+/* =========== STATS =========== */
+function renderStats(){ const v=$("#view-stats"); v.innerHTML=""; v.appendChild(labelHead("Прогресс","эта неделя"));
+  const ws=weekStats(); const wpct=ws.totalMin?Math.round(ws.doneMin/ws.totalMin*100):0; const streak=computeStreak();
+  const grid=el("div","statgrid");
+  grid.innerHTML=statCard(streak,"дней подряд 🔥",true)+statCard(wpct+"%","недели пройдено")+statCard(ws.doneTasks+"/"+ws.totalTasks,"заданий за неделю")+statCard(Math.round(ws.doneMin/60*10)/10+" ч","времени с языком");
+  v.appendChild(grid);
+  const p=el("div","panel"); let h='<h3>Время по языкам (неделя)</h3>'; let maxT=1; LANG_ORDER.forEach(l=>{ if(ws.perLang[l].total>maxT)maxT=ws.perLang[l].total; });
+  LANG_ORDER.forEach(l=>{ const pl=ws.perLang[l]; const w=Math.round(pl.done/maxT*100);
+    h+='<div class="bar-row"><span class="bl">'+LANG[l].name+'</span><span class="bar-track"><span class="bar-fill" style="width:'+w+'%; --lc:var('+LANG[l].v+')"></span></span><span class="bv tnum">'+pl.done+'′</span></div>'; });
+  p.innerHTML=h; v.appendChild(p);
+  const hp=el("div","panel"); let hh='<h3>Последние 7 дней</h3><div class="heat">'; const today=new Date(); today.setHours(0,0,0,0);
+  for(let i=6;i>=0;i--){ const d=new Date(today); d.setDate(today.getDate()-i); const c=dayCompletion(d); const ratio=c.total?c.done/c.total:0;
+    const lvl=ratio>=1?"lvl3":ratio>=.5?"lvl2":ratio>0?"lvl1":""; hh+='<div class="cell '+lvl+'" title="'+dkey(d)+'">'+DOW_RU[d.getDay()][0]+'</div>'; }
+  hh+='</div>'; hp.innerHTML=hh; v.appendChild(hp);
+  const tip=el("div","info"); tip.innerHTML='<p style="margin:0">💡 Не «я учу 4 языка», а <b>«я улучшаю английский и играю с остальными»</b>. Снижаешь планку — исчезает страх не успеть.</p>'; v.appendChild(tip);
+}
+const statCard=(n,l,acc)=>'<div class="stat"><div class="n tnum'+(acc?" accent":"")+'">'+n+'</div><div class="l">'+l+'</div></div>';
+function labelHead(a,b){const e=el("div","datehead"); e.innerHTML='<div class="d1">'+a+'</div><div class="d2">'+b+'</div>'; return e;}
+
+/* =========== REMIND / SETTINGS =========== */
+const ICS_EVENTS=[
+  {sum:"🇯🇵 Японский — хирагана/кандзи",days:["TH","FR"],h:7,m:30,dur:30,desc:"Утро: мозг как чистый лист. Фразы-лего и узнавание хираганы."},
+  {sum:"Татарский — аудио в дороге",days:["MO","TU","WE","TH","FR"],h:8,m:30,dur:15,desc:"Песни / подкаст. Цель — подпевать и ловить корни."},
+  {sum:"🇫🇷 Французский — читать вслух",days:["MO","TU","WE"],h:20,m:0,dur:15,desc:"Техника «дубль»: связывай с английским словом-близнецом."},
+  {sum:"🇬🇧 Английский — книга вслух",days:["MO","TU","WE"],h:20,m:15,dur:15,desc:"Читай вслух/шёпотом. Новые слова только подчёркивай."},
+  {sum:"🇬🇧 Английский — чтение книги",days:["TH","FR"],h:21,m:0,dur:10,desc:"10 минут книги. Слово, встреченное 3 раза за неделю — важное."},
+  {sum:"🇬🇧 Английский — грамматика",days:["SA"],h:10,m:0,dur:40,desc:"1 сложная тема за выходные + 10 предложений о своей жизни."},
+  {sum:"🇬🇧 Английский — диктофон",days:["SA"],h:10,m:40,dur:20,desc:"Запиши свои предложения на диктофон и переслушай."},
+  {sum:"🇬🇧 Английский — фразовые глаголы",days:["SU"],h:10,m:0,dur:40,desc:"5 глаголов (get/take/break/bring/come) со всеми значениями."},
+  {sum:"🇬🇧 Английский — повтор недели",days:["SU"],h:10,m:40,dur:20,desc:"Вернись к подчёркнутым за неделю словам."}
+];
+const DAYIDX={SU:0,MO:1,TU:2,WE:3,TH:4,FR:5,SA:6}; const pad=n=>String(n).padStart(2,"0");
+const icsDT=(d,h,m)=>d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"T"+pad(h)+pad(m)+"00";
+function buildICS(){ const now=new Date(); const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//MoiYazyki//RU","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
+  ICS_EVENTS.forEach((ev,idx)=>{ const firstIdx=DAYIDX[ev.days[0]]; const start=new Date(now); start.setHours(ev.h,ev.m,0,0);
+    start.setDate(start.getDate()+((firstIdx-start.getDay()+7)%7)); const end=new Date(start.getTime()+ev.dur*60000);
+    lines.push("BEGIN:VEVENT","UID:moiyazyki-"+idx+"@local","DTSTAMP:"+icsDT(now,now.getHours(),now.getMinutes()),
+      "DTSTART:"+icsDT(start,start.getHours(),start.getMinutes()),"DTEND:"+icsDT(end,end.getHours(),end.getMinutes()),
+      "RRULE:FREQ=WEEKLY;BYDAY="+ev.days.join(","),"SUMMARY:"+ev.sum,"DESCRIPTION:"+ev.desc,
+      "BEGIN:VALARM","TRIGGER:-PT5M","ACTION:DISPLAY","DESCRIPTION:"+ev.sum,"END:VALARM","END:VEVENT"); });
+  lines.push("END:VCALENDAR"); return lines.join("\r\n"); }
+function downloadICS(){ const data=buildICS();
+  try{ const blob=new Blob([data],{type:"text/calendar;charset=utf-8"}); const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download="moi-yazyki.ics"; document.body.appendChild(a); a.click();
+    setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(url);},500); toast("Календарь скачан ✓");
+  }catch(e){ window.location.href="data:text/calendar;charset=utf-8,"+encodeURIComponent(data); } }
+
+function renderRemind(){ const v=$("#view-remind"); v.innerHTML=""; v.appendChild(labelHead("Ещё","напоминания и синхронизация"));
+  const c1=el("div","info"); c1.innerHTML='<h3>📅 Добавить расписание в Календарь</h3><p>Самый надёжный способ на iPhone. Скачается файл со <b>всеми занятиями</b> недели — с повтором и сигналом за 5 минут. Открой его → «<b>Добавить все</b>» → выбери календарь.</p>';
+  const b=el("button","btn block","📥 Скачать календарь (.ics)"); b.addEventListener("click",downloadICS); c1.appendChild(b); v.appendChild(c1);
+
+  const cs=el("div","info"); let sh='<h3>☁️ Синхронизация</h3>';
+  if(syncCode){ sh+='<p>Данные синхронизируются через твой Firebase. Введи этот <b>код</b> на другом устройстве, чтобы увидеть всё то же самое:</p>'; }
+  else{ sh+='<p>Сейчас данные хранятся только на этом устройстве. Включи синхронизацию, чтобы они сохранялись в облаке и открывались на других устройствах.</p>'; }
+  cs.innerHTML=sh;
+  if(syncCode){ const box=el("div","codebox"); box.innerHTML='<code>'+esc(syncCode)+'</code>';
+    const cp=el("button","btn sm","Копировать"); cp.addEventListener("click",async()=>{ try{ await navigator.clipboard.writeText(syncCode); toast("Код скопирован ✓"); }catch(e){ toast("Скопируй вручную"); } }); box.appendChild(cp); cs.appendChild(box);
+    const st=el("p",null,'Статус: <b id="syncTxt">'+syncLabel()+'</b>'); st.style.margin="0"; cs.appendChild(st);
+    const ch=el("button","btn ghost block sm","Сменить код / устройство"); ch.style.marginTop="10px"; ch.addEventListener("click",openOnboard); cs.appendChild(ch);
+  }else{ const en=el("button","btn block","Включить синхронизацию"); en.addEventListener("click",openOnboard); cs.appendChild(en); }
+  v.appendChild(cs);
+
+  const c2=el("div","info"); c2.innerHTML='<h3>📲 Иконка на экран «Домой»</h3><ol><li>Открой это приложение в <b>Safari</b>.</li><li>Нажми <span class="kbd">Поделиться</span> (квадрат со стрелкой).</li><li>Выбери <span class="kbd">На экран «Домой»</span>.</li><li>Готово — открывается как настоящее приложение.</li></ol>'; v.appendChild(c2);
+}
+function syncLabel(){ return syncState==="ok"?"подключено ✓":syncState==="syncing"?"синхронизация…":"нет связи"; }
+
+/* =========== nav / theme =========== */
+const RENDER={today:renderToday,week:renderWeek,notes:renderNotes,stats:renderStats,remind:renderRemind};
+function rerenderCurrent(){ const a=document.querySelector(".nav-b.active"); if(a) RENDER[a.dataset.v](); }
+function show(view){ document.querySelectorAll(".view").forEach(s=>s.classList.remove("active"));
+  $("#view-"+view).classList.add("active"); document.querySelectorAll(".nav-b").forEach(b=>b.classList.toggle("active",b.dataset.v===view));
+  RENDER[view](); window.scrollTo(0,0); }
+document.querySelectorAll(".nav-b").forEach(b=>b.addEventListener("click",()=>show(b.dataset.v)));
+function updateStreak(){ $("#streakN").textContent=computeStreak(); }
+
+function applyTheme(t){ if(t)document.documentElement.setAttribute("data-theme",t); else document.documentElement.removeAttribute("data-theme"); }
+applyTheme(state.theme);
+$("#themeBtn").addEventListener("click",()=>{ const cur=document.documentElement.getAttribute("data-theme");
+  const isDark=cur?cur==="dark":matchMedia("(prefers-color-scheme: dark)").matches; state.theme=isDark?"light":"dark";
+  applyTheme(state.theme); persist(); rerenderCurrent(); });
+
+/* =========== Firebase sync =========== */
+let db=null, docRef=null, syncCode=localStorage.getItem(CKEY)||null, applyingRemote=false, pushTimer=null, syncState="off";
+function setSync(s){ syncState=s; const el2=$("#syncBtn"); el2.className="iconbtn "+(s==="ok"?"ok":s==="syncing"?"syncing":"off");
+  const tx=$("#syncTxt"); if(tx) tx.textContent=syncLabel(); }
+$("#syncBtn").addEventListener("click",()=>show("remind"));
+
+function genCode(){ const a="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"; let s=""; const arr=new Uint32Array(24);
+  (crypto||window.crypto).getRandomValues(arr); for(let i=0;i<24;i++) s+=a[arr[i]%a.length]; return s; }
+
+function applyRemote(data){ applyingRemote=true;
+  state.done=data.done||{}; state.notes=data.notes||{}; state.vocab=data.vocab||{}; state.diary=data.diary||[];
+  if(data.theme!==undefined){ state.theme=data.theme; applyTheme(state.theme); }
+  saveLocal(); applyingRemote=false; rerenderCurrent(); updateStreak(); }
+
+function schedulePush(){ if(applyingRemote||!docRef) return; setSync("syncing"); clearTimeout(pushTimer); pushTimer=setTimeout(pushNow,700); }
+async function pushNow(){ if(!docRef) return; try{ await setDoc(docRef,{data:state,updatedAt:serverTimestamp()},{merge:true}); setSync("ok"); }catch(e){ setSync("off"); } }
+
+async function connect(){ if(!syncCode) return;
+  try{ const app=initializeApp(firebaseConfig); db=getFirestore(app); docRef=doc(db,"spaces",syncCode); setSync("syncing");
+    const snap=await getDoc(docRef);
+    if(snap.exists()&&snap.data().data) applyRemote(snap.data().data); else await pushNow();
+    onSnapshot(docRef,{includeMetadataChanges:false},s=>{ if(s.metadata.hasPendingWrites) return;
+      if(s.exists()&&s.data().data){ const inc=JSON.stringify(s.data().data); if(inc!==JSON.stringify(cleanState())) applyRemote(s.data().data); } },
+      ()=>setSync("off"));
+    setSync("ok");
+  }catch(e){ setSync("off"); } }
+function cleanState(){ return {done:state.done,notes:state.notes,vocab:state.vocab,diary:state.diary,theme:state.theme}; }
+
+/* onboarding overlay */
+function openOnboard(){ $("#codeInput").value=syncCode||""; $("#onboard").classList.add("show"); }
+function closeOnboard(){ $("#onboard").classList.remove("show"); }
+$("#codeGen").addEventListener("click",()=>{ $("#codeInput").value=genCode(); });
+$("#codeSkip").addEventListener("click",()=>{ closeOnboard(); });
+$("#codeStart").addEventListener("click",()=>{ let c=$("#codeInput").value.trim().replace(/\s+/g,"");
+  if(c.length<20){ toast("Код должен быть не короче 20 символов"); return; }
+  syncCode=c; localStorage.setItem(CKEY,c); closeOnboard(); docRef=null; connect(); rerenderCurrent(); });
+
+/* first run */
+if(!syncCode){ // suggest a code, show overlay once
+  $("#codeInput").value=genCode(); $("#onboard").classList.add("show");
+}else{ connect(); }
+
+/* init */
+renderToday(); updateStreak();
+</script>
+</body>
+</html>
